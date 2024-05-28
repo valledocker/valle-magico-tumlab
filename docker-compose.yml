@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  valle-magico-front:
+    image: vallelabs/valle-magico-front:1.2.5
+    container_name: valle-magico-front
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "tumlab.local:192.168.4.1"
+    environment:
+      NEXT_PUBLIC_API_URL : http://tumlab.local:4012
+      NEXT_PUBLIC_DOMAIN : http://tumlab.local:3008
+      NEXT_PUBLIC_GAME_URL : http://tumlab.local:3009
+    ports:
+      - "3008:3000"
+    networks:
+      - valle-magico-net
+  valle-magico-back:
+    image: vallelabs/valle-magico-back:1.2.7
+    container_name: valle-magico-back
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "tumlab.local:192.168.4.1"
+    env_file:
+      - /tumlab/apps/envs/.env-vallemagico-back
+    ports:
+      - "4012:3000"
+    networks:
+      - valle-magico-net
+  valle-magico-game:
+    image: vallelabs/valle-magico-game:2.3.6-tumlab.1
+    container_name: valle-magico-game
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "tumlab.local:192.168.4.1"
+    ports:
+      - "3009:80"
+    networks:
+      - valle-magico-net
+      
+  valle-magico-mysql:
+    image: mysql:5.7
+    container_name: valle-magico-mysql
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "tumlab.local:192.168.4.1"
+    environment:
+      MYSQL_ROOT_PASSWORD: Tumlab2022*
+      MYSQL_DATABASE: valle_magico
+      MYSQL_USER: valleroot 
+      MYSQL_PASSWORD: Tumlab2022*
+    volumes:
+      - mysqlvallemagico:/var/lib/mysql
+      - /tumlab/apps/vallemagico/:/docker-entrypoint-initdb.d/
+    networks:
+      - valle-magico-net
+networks:
+  valle-magico-net:
+    driver: bridge
+    
+volumes:
+  mysqlvallemagico:
+    driver: local
+
